@@ -35,21 +35,36 @@ for subj=numSub
     TFR.attRight.LF = ft_appendfreq([],TFR.right.LF.ind{:}); %does this accurately append attR and attL data?
     TFR.attLeft.LF  = ft_appendfreq([],TFR.left.LF.ind{:});
     
-    %% Choose ROI
+    %% Choose necessary data
     cfg = [];
     cfg.latency     = [.150 1]; %the time of interest
     cfg.frequency   = [8 13];   %frequency of interest
     cfg.avgoverfreq = 'yes';
     cfg.avgoverrpt  = 'yes';
+    cfg.avgovertime = 'yes';
     cfg.nanmean     = 'yes';
     cfg.channel     = planars; %only choose planars for ROI selection
     %select data
     TFR_attRight_alpha_planars = ft_selectdata(cfg,TFR.attRight.LF); %separately run for each hemisphere's ROI always with R-L
     TFR_attLeft_alpha_planars  = ft_selectdata(cfg,TFR.attLeft.LF);
-    
-    %% Save data
+
     TFR_attRight_alpha_all_subs{subj,1} = TFR_attRight_alpha_planars;
     TFR_attLeft_alpha_all_subs{subj,1}  = TFR_attLeft_alpha_planars;
 end
-
 save([saveFolder filesep 'TFR_all_subs_alpha'],'TFR_attRight_alpha_all_subs','TFR_attLeft_alpha_all_subs')
+
+%% Average over all subjects and contrast R vs. L
+
+cfg = [];
+frq_grnd_avg_attRight = ft_freqgrandaverage(cfg,TFR_attRight_alpha_all_subs{:,1});
+frq_grnd_avg_attLeft  = ft_freqgrandaverage(cfg,TFR_attLeft_alpha_all_subs{:,1});
+
+
+R_L_frq_contrast = squeeze(frq_grnd_avg_attRight.powspctrm)-squeeze(frq_grnd_avg_attLeft.powspctrm);
+[BRL,idxRL] = sortrows(RLContrast,'descend'); % a vector of data ordered from highest to lowest difference in R-L
+
+
+
+
+
+
