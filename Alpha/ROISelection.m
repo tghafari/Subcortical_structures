@@ -11,13 +11,13 @@ data_folder='Z:\Load\MEG Data\proc_data\'; %Windows
 addpath Z:\MATLAB\fieldtrip-20200320 %Windows
 ft_defaults
 
+% saveFolder = '/rds/projects/j/jenseno-avtemporal-attention/Load/Results/Group/Alpha';
 saveFolder = 'Z:\Load\Results\Group\Alpha';
 
 badSubs=28;
 numSub = setxor(1:35,badSubs);
 TFR_attRight_alpha_all_subs = cell(length(numSub),1);
 TFR_attLeft_alpha_all_subs  = cell(length(numSub),1);
-
 
 for subj=numSub
     if numel(num2str(subj))==1; sub=['S0' num2str(subj)]; else; sub=['S' num2str(subj)]; end
@@ -51,19 +51,19 @@ for subj=numSub
     TFR_attRight_alpha_all_subs{subj,1} = TFR_attRight_alpha_planars;
     TFR_attLeft_alpha_all_subs{subj,1}  = TFR_attLeft_alpha_planars;
 end
-save([saveFolder filesep 'TFR_all_subs_alpha'],'TFR_attRight_alpha_all_subs','TFR_attLeft_alpha_all_subs')
+save([saveFolder filesep 'TFR_all_subs_alpha_BU'],'TFR_attRight_alpha_all_subs','TFR_attLeft_alpha_all_subs','-v7.3')
 
-%% Average over all subjects and contrast R vs. L
-
-cfg = [];
-frq_grnd_avg_attRight = ft_freqgrandaverage(cfg,TFR_attRight_alpha_all_subs{:,1});
-frq_grnd_avg_attLeft  = ft_freqgrandaverage(cfg,TFR_attLeft_alpha_all_subs{:,1});
-
-
-R_L_frq_contrast = squeeze(frq_grnd_avg_attRight.powspctrm)-squeeze(frq_grnd_avg_attLeft.powspctrm);
-[BRL,idxRL] = sortrows(RLContrast,'descend'); % a vector of data ordered from highest to lowest difference in R-L
-
-
+% %% Average over all subjects and contrast R vs. L
+% 
+% cfg = [];
+% frq_grnd_avg_attRight = ft_freqgrandaverage(cfg,TFR_attRight_alpha_all_subs{:,1});
+% frq_grnd_avg_attLeft  = ft_freqgrandaverage(cfg,TFR_attLeft_alpha_all_subs{:,1});
+% 
+% 
+% R_L_frq_contrast = squeeze(frq_grnd_avg_attRight.powspctrm)-squeeze(frq_grnd_avg_attLeft.powspctrm);
+% [BRL,idxRL] = sortrows(RLContrast,'descend'); % a vector of data ordered from highest to lowest difference in R-L
+% 
+% 
 
 
 
