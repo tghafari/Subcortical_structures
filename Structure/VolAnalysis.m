@@ -1,14 +1,19 @@
 %analyse the volumes
 clear;clc
 
-addpath '/Users/Tara/Documents/Projects/CHBHVisit/PerceptualLoad/Data/MRI_Data/';
-filePath='/Users/Tara/Documents/Projects/CHBHVisit/PerceptualLoad/Data/MRI_Data/Processed_Data/';
+% addpath '/Users/Tara/Documents/Projects/CHBHVisit/PerceptualLoad/Data/MRI_Data/';
+% filePath='/Users/Tara/Documents/Projects/CHBHVisit/PerceptualLoad/Data/MRI_Data/Processed_Data/';
+
+% filePath='/Volumes/rdsprojects/j/jenseno-avtemporal-attention/Load/MRI_data/Processed Data/'; %Portal
+% addpath '/Volumes/rdsprojects/j/jenseno-avtemporal-attention/Load/MRI_data/Processed Data/'; %Portal
 
 % addpath '/Volumes/jenseno-avtemporal-attention/Load/MRI_data/Processed_Data/';
 % filePath='/Volumes/jenseno-avtemporal-attention/Load/MRI_data/Processed_Data/';
 
-% filePath='/Volumes/rdsprojects/j/jenseno-avtemporal-attention/Load/MRI_data/Processed Data/';
-% addpath '/Volumes/rdsprojects/j/jenseno-avtemporal-attention/Load/MRI_data/Processed Data/';
+addpath 'Z:\Load\MRI_data\Processed_Data'
+filePath   = 'Z:\Load\MRI_data\Processed_Data';
+saveFolder = 'Z:\Load\Results\FieldTrip Plots\matFiles';
+
 
 lables=[10,11,12,13,16,17,18,26,49,50,51,52,53,54,58];
 structures={'L-Thal','L-Caud','L-Puta','L-Pall','BrStem /4th Ventricle',...
@@ -16,18 +21,18 @@ structures={'L-Thal','L-Caud','L-Puta','L-Pall','BrStem /4th Ventricle',...
     'R-Pall','R-Hipp','R-Amyg','R-Accu'};
 HemisComp={'Thal','Caud','Puta','Pall','Hipp','Amyg','Accu'};
 
-load([filePath 'AllVolumes'])
+load([filePath filesep 'AllVolumes'])
 hemisVol=volumes(:,setxor(1:length(lables),5));
 %% Calculate LV index
 LV=zeros(35,7);
 for sub=1:35
     for i=1:7
         % [h(i),p(i)]=ranksum(hemisVol(:,i),hemisVol(:,i+7)); %statistical test
-        
-        LV(sub,i)=(hemisVol(sub,i+7)-hemisVol(sub,i))/(hemisVol(sub,i)+hemisVol(sub,i+7));
+        LV(sub,i)=(hemisVol(sub,i+7)-hemisVol(sub,i))/(hemisVol(sub,i)+hemisVol(sub,i+7)); %R-L/R+L as in Cecilia's paper
     end
 end
 
+save([saveFolder filesep 'AllSubFiles' filesep 'LV_all'],'LV')
 %% Throw out the outliers
 h=zeros(1,7);p=zeros(1,7);
 format short
