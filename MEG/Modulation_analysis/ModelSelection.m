@@ -23,7 +23,7 @@ nReg = cell(7,1);
 for n_regr = 1:7
 nReg{n_regr} = unique(sort(combnk(1:7,n_regr)), 'rows', 'stable'); % contains all unique combinations of n numbers from 1:7
 end
-%% 3 regr models
+%% n regr models
 % Preallocation
 LME = cell(7,13);
 str_lbl = cell(7,13);
