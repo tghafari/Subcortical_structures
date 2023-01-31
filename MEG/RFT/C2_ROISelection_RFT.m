@@ -1,0 +1,177 @@
+function [] = C2_ROISelection_RFT(badSubs,ROI_num)
+
+% ROI analysis -> Calculates ROI for RFT based on grand average
+%inputs: 
+%   badSubs: subjects you want to reject
+%   ROI_num: number of sensors to constitute the ROI for each side & config
+
+%% Load clean MEG file
+% data_folder='/rds/projects/j/jenseno-avtemporal-attention/Load/MEG Data/proc_data/'; %Portal
+% addpath /rds/projects/j/jenseno-avtemporal-attention/MATLAB/fieldtrip-20200320 %Portal
+% saveFolder = '/rds/projects/j/jenseno-avtemporal-attention/MATLAB/Perceptual_Load/FieldTrip/Results/group_level';
+
+data_folder='Z:\Load\MEG Data\proc_data\'; %Windows
+addpath Z:\MATLAB\fieldtrip-20210328 %Windows
+saveFolder = 'Z:\MATLAB\Perceptual_Load\FieldTrip\Results\group_level\RFT';
+
+ft_defaults
+
+if nargin < 2
+    if nargin < 1
+        ROI_num = input('How many sensors in each ROI?');
+        badSubs = input('Enter the code of bad subjects:');        
+    else
+        ROI_num = input('How many sensors in each ROI?');
+    end
+end
+
+numSub = setxor(1:35,badSubs);
+
+%Preallocate
+cue_left_f1f2_left_nl_power    = nan(102,length(numSub));
+dist_left_f1f2_left_nl_power   = nan(102,length(numSub));
+cue_right_f1f2_right_nl_power  = nan(102,length(numSub));
+dist_right_f1f2_right_nl_power = nan(102,length(numSub));
+
+for subj=numSub
+    
+    if numel(num2str(subj))==1; sub=['S0' num2str(subj)]; else; sub=['S' num2str(subj)]; end
+    disp(['loading ' sub])
+    load([data_folder sub filesep sub '_TFR_RFT_tl_correct_only.mat']);fprintf('Done\n')
+    
+    %% Channel selection
+    
+    MEG_sens  = strmatch('MEG',TFR.left.RFT.ev.f1{1,1}.label);
+    sens_type = str2num(cellfun(@(x) x(end),TFR.left.RFT.ev.f1{1,1}.label(MEG_sens),'UniformOutput',1));
+    
+    planars = sort([MEG_sens(sens_type==2) ; MEG_sens(sens_type==3)]);
+    mags    = MEG_sens(sens_type==1);
+        
+    bad_sensors={'ELX';'ELY';'ELPUPIL';'DIODE';'vEOG'}; % should be added due to ft error in channel selection
+    %% Rename/Separate files
+    
+    cue_left_63_flicker_left  = TFR.attLeft.ev.f1{1};    %-->ROIs on right
+    dist_left_63_flicker_left = TFR.attRight.ev.f1{1};   %-->ROIs on right
+    cue_right_63_flicker_right  = TFR.attRight.ev.f1{2}; %-->ROIs on left
+    dist_right_63_flicker_right = TFR.attLeft.ev.f1{2};  %-->ROIs on left
+    
+    cue_right_70_flicker_right  = TFR.attRight.ev.f2{1}; %-->ROIs on left
+    dist_right_70_flicker_right = TFR.attLeft.ev.f2{1};  %-->ROIs on left
+    cue_left_70_flicker_left  = TFR.attLeft.ev.f2{2};    %-->ROIs on right
+    dist_left_70_flicker_left = TFR.attRight.ev.f2{2};   %-->ROIs on right
+    
+    %% Choose necessary data
+    
+    disp('selecting data')
+    %find last non-nan datapoint
+    t_end = TFR.attLeft.ev.f1{1, 1}.time(find(~isnan(squeeze(TFR.attLeft.ev.f1{1, 1}.powspctrm(1,1,1,:))),1,'last'));
+    %is the squeeze correct? on which dimenstion should it not be nan?
+    
+    cfg = [];
+    cfg.latency     = [0 t_end]; %the time of interest
+    cfg.avgoverfreq = 'yes';
+    cfg.avgoverrpt  = 'yes';
+    cfg.avgovertime = 'yes';
+    cfg.nanmean     = 'yes';
+    cfg.channel     = planars; %only choose planars for ROI selection
+    
+    %Select data separately for 63 and 70
+    cfg.frequency = [63 63];   %frequency 1
+    RFT.c1.indiv.cue_left_63_left    = ft_selectdata(cfg,cue_left_63_flicker_left);
+    RFT.c1.indiv.dist_left_63_left   = ft_selectdata(cfg,dist_left_63_flicker_left);
+    RFT.c2.indiv.cue_right_63_right  = ft_selectdata(cfg,cue_right_63_flicker_right);
+    RFT.c2.indiv.dist_right_63_right = ft_selectdata(cfg,dist_right_63_flicker_right);
+    
+    cfg.frequency = [70 70];   %frequency 2
+    RFT.c1.indiv.cue_right_70_right  = ft_selectdata(cfg,cue_right_70_flicker_right);
+    RFT.c1.indiv.dist_right_70_right = ft_selectdata(cfg,dist_right_70_flicker_right);
+    RFT.c2.indiv.cue_left_70_left    = ft_selectdata(cfg,cue_left_70_flicker_left);
+    RFT.c2.indiv.dist_left_70_left   = ft_selectdata(cfg,dist_left_70_flicker_left);
+    
+    %Delete unrelated sensors
+    for ii = 1:5
+        RFT.c1.indiv.cue_left_63_left.powspctrm(strmatch(bad_sensors{ii},RFT.c1.indiv.cue_left_63_left.label)) =[];
+        RFT.c1.indiv.cue_left_63_left.label(strmatch(bad_sensors{ii},RFT.c1.indiv.cue_left_63_left.label)) =[];
+        RFT.c1.indiv.dist_left_63_left.powspctrm(strmatch(bad_sensors{ii},RFT.c1.indiv.dist_left_63_left.label)) =[];
+        RFT.c1.indiv.dist_left_63_left.label(strmatch(bad_sensors{ii},RFT.c1.indiv.dist_left_63_left.label)) =[];
+        RFT.c2.indiv.cue_right_63_right.powspctrm(strmatch(bad_sensors{ii},RFT.c2.indiv.cue_right_63_right.label)) =[];
+        RFT.c2.indiv.cue_right_63_right.label(strmatch(bad_sensors{ii},RFT.c2.indiv.cue_right_63_right.label)) =[];
+        RFT.c2.indiv.dist_right_63_right.powspctrm(strmatch(bad_sensors{ii},RFT.c2.indiv.dist_right_63_right.label)) =[];
+        RFT.c2.indiv.dist_right_63_right.label(strmatch(bad_sensors{ii},RFT.c2.indiv.dist_right_63_right.label)) =[];
+
+        RFT.c1.indiv.cue_right_70_right.powspctrm(strmatch(bad_sensors{ii},RFT.c1.indiv.cue_right_70_right.label)) =[];
+        RFT.c1.indiv.cue_right_70_right.label(strmatch(bad_sensors{ii},RFT.c1.indiv.cue_right_70_right.label)) =[];
+        RFT.c1.indiv.dist_right_70_right.powspctrm(strmatch(bad_sensors{ii},RFT.c1.indiv.dist_right_70_right.label)) =[];
+        RFT.c1.indiv.dist_right_70_right.label(strmatch(bad_sensors{ii},RFT.c1.indiv.dist_right_70_right.label)) =[];
+        RFT.c2.indiv.cue_left_70_left.powspctrm(strmatch(bad_sensors{ii},RFT.c2.indiv.cue_left_70_left.label)) =[];
+        RFT.c2.indiv.cue_left_70_left.label(strmatch(bad_sensors{ii},RFT.c2.indiv.cue_left_70_left.label)) =[];
+        RFT.c2.indiv.dist_left_70_left.powspctrm(strmatch(bad_sensors{ii},RFT.c2.indiv.dist_left_70_left.label)) =[];
+        RFT.c2.indiv.dist_left_70_left.label(strmatch(bad_sensors{ii},RFT.c2.indiv.dist_left_70_left.label)) =[];
+    end
+    
+    %Normalization indices
+    appnd_63_left  = ft_appendfreq([],RFT.c1.indiv.cue_left_63_left,RFT.c1.indiv.dist_left_63_left);
+    appnd_63_right = ft_appendfreq([],RFT.c2.indiv.cue_right_63_right,RFT.c2.indiv.dist_right_63_right);
+    appnd_70_right = ft_appendfreq([],RFT.c1.indiv.cue_right_70_right,RFT.c1.indiv.dist_right_70_right);
+    appnd_70_left  = ft_appendfreq([],RFT.c2.indiv.cue_left_70_left,RFT.c2.indiv.dist_left_70_left);
+    
+    nl_idx_63_left  = mean(mean(appnd_63_left.powspctrm));
+    nl_idx_63_right = mean(mean(appnd_63_right.powspctrm));
+    nl_idx_70_right = mean(mean(appnd_70_right.powspctrm));
+    nl_idx_70_left  = mean(mean(appnd_70_left.powspctrm));
+    
+    %Normalize each subject to the average of all channels in each freq for
+    %each config
+    nrmlz_cue_left_63_left    = RFT.c1.indiv.cue_left_63_left.powspctrm./nl_idx_63_left;
+    nrmlz_dist_left_63_left   = RFT.c1.indiv.dist_left_63_left.powspctrm./nl_idx_63_left;
+    nrmlz_cue_right_63_right  = RFT.c2.indiv.cue_right_63_right.powspctrm./nl_idx_63_right;
+    nrmlz_dist_right_63_right = RFT.c2.indiv.dist_right_63_right.powspctrm./nl_idx_63_right;
+    
+    nrmlz_cue_right_70_right  = RFT.c1.indiv.cue_right_70_right.powspctrm./nl_idx_70_right;
+    nrmlz_dist_right_70_right = RFT.c1.indiv.dist_right_70_right.powspctrm./nl_idx_70_right;
+    nrmlz_cue_left_70_left    = RFT.c2.indiv.cue_left_70_left.powspctrm./nl_idx_70_left;
+    nrmlz_dist_left_70_left   = RFT.c2.indiv.dist_left_70_left.powspctrm./nl_idx_70_left;
+    
+    %save subjects data in the main cell - normalizing 63 and 70 let us
+    %average them together for ROI selection
+    cue_left_f1f2_left_nl_power(:,subj)    = mean([nrmlz_cue_left_63_left,nrmlz_cue_left_70_left],2);
+    dist_left_f1f2_left_nl_power(:,subj)   = mean([nrmlz_dist_left_63_left,nrmlz_dist_left_70_left],2);
+    cue_right_f1f2_right_nl_power(:,subj)  = mean([nrmlz_cue_right_63_right,nrmlz_cue_right_70_right],2);
+    dist_right_f1f2_right_nl_power(:,subj) = mean([nrmlz_dist_right_63_right,nrmlz_dist_right_70_right],2);    
+    
+end
+disp('Saving BU')
+save([saveFolder filesep 'TFR_all_subs_nl_pow_RFT'],'cue_left_f1f2_left_nl_power',...
+    'dist_left_f1f2_left_nl_power','cue_right_f1f2_right_nl_power','dist_right_f1f2_right_nl_power')
+
+%% Average over all subjects and contrast R vs. L
+
+disp('grand averaging over all configs')
+
+% Grand average on power spectrum
+RFT.c1c2.group.pow.grnd_avg.cue_left_f1f2_left    = nanmean(cue_left_f1f2_left_nl_power,2);
+RFT.c1c2.group.pow.grnd_avg.dist_left_f1f2_left   = nanmean(dist_left_f1f2_left_nl_power,2);
+RFT.c1c2.group.pow.grnd_avg.cue_right_f1f2_right  = nanmean(cue_right_f1f2_right_nl_power,2);
+RFT.c1c2.group.pow.grnd_avg.dist_right_f1f2_right = nanmean(dist_right_f1f2_right_nl_power,2);
+
+disp('Calculating ROI')
+
+RFT.c1c2.group.powCntrst.left  = RFT.c1c2.group.pow.grnd_avg.cue_left_f1f2_left ... 
+                               - RFT.c1c2.group.pow.grnd_avg.dist_left_f1f2_left;   % sens on right for 63 and 70
+RFT.c1c2.group.powCntrst.right = RFT.c1c2.group.pow.grnd_avg.cue_right_f1f2_right ... 
+                               - RFT.c1c2.group.pow.grnd_avg.dist_right_f1f2_right; % sens on left for 63 and 70
+
+[~,RFT.c1c2.group.ordIdx.left]  = sortrows(RFT.c1c2.group.powCntrst.left,'descend');  % a vector of frq contrasts ordered from highest to lowest difference when flickers on left
+[~,RFT.c1c2.group.ordIdx.right] = sortrows(RFT.c1c2.group.powCntrst.right,'descend'); % a vector of frq contrasts ordered from highest to lowest difference when flickers on right
+
+ROI_labels_right_sens = appnd_70_left.label(RFT.c1c2.group.ordIdx.left(1:ROI_num)); % doesn't matter which one to use for labels
+ROI_labels_left_sens  = appnd_70_left.label(RFT.c1c2.group.ordIdx.right(1:ROI_num));
+
+ROI_inds_right_sens = RFT.c1c2.group.ordIdx.left(1:ROI_num);
+ROI_inds_left_sens  = RFT.c1c2.group.ordIdx.right(1:ROI_num); 
+
+disp('saving ROI')
+save([saveFolder filesep 'ROI_RFT/ROI_R_sens'],'ROI_labels_right_sens','ROI_inds_right_sens')
+save([saveFolder filesep 'ROI_RFT/ROI_L_sens'],'ROI_labels_left_sens','ROI_inds_left_sens')
+
+end

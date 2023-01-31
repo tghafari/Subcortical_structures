@@ -1,113 +1,113 @@
-function [] = RFT_TFR(sub,av_type)
+function [] = C1_TFR_RFT(sub,av_type)
 %RFT TFR analysis
 
 %% Load clean MEG file
-proc_folder='/rds/projects/j/jenseno-avtemporal-attention/Load/MEG Data/proc_data/'; %Portal
-addpath /rds/projects/j/jenseno-avtemporal-attention/MATLAB/fieldtrip-20200320 %Portal
+% proc_folder='/rds/projects/j/jenseno-avtemporal-attention/Load/MEG Data/proc_data/'; %Portal
+% addpath /rds/projects/j/jenseno-avtemporal-attention/MATLAB/fieldtrip-20210328 %Portal
 
-% proc_folder='Z:\Load\MEG Data\proc_data\'; %Windows
-% addpath Z:\MATLAB\fieldtrip-20200320 %Windows
+proc_folder='Z:\Load\MEG Data\proc_data\'; %Windows
+addpath Z:\MATLAB\fieldtrip-20210328 %Windows
 
 ft_defaults
 
 correct_only = 1;
 if nargin<2
-choice_made = 0;
-fprintf('Select averaging type: \n')
-fprintf('[1] RFT-induced\n')
-fprintf('[2] RFT-evoked\n')  %better choice
-fprintf('[3] HF-cue-locked\n')
-fprintf('[4] HF-target-locked\n') %better choice
-
-while ~choice_made
-    choice=input('Enter number: ');
-    if choice>5 || choice<1
-        disp('Invalid choice, please try again');
-    else
-        av_type = choice;
-        switch choice
-            case 1
-                disp('induced selected')
-            case 2
-                disp('evoked selected')
-            case 3
-                disp('cue-locked selected')
-            case 4
-                disp('target-locked selected')
+    choice_made = 0;
+    fprintf('Select averaging type: \n')
+    fprintf('[1] RFT-induced\n') %induced target-onsett data
+    fprintf('[2] RFT-evoked\n')  %time locked cue-offset data
+    fprintf('[3] HF-cue-locked\n')
+    fprintf('[4] HF-target-locked\n') %better choice
+    
+    while ~choice_made
+        choice=input('Enter number: ');
+        if choice>5 || choice<1
+            disp('Invalid choice, please try again');
+        else
+            av_type = choice;
+            switch choice
+                case 1
+                    disp('induced target-locked selected')
+                case 2
+                    disp('evoked cue-locked selected')
+                case 3
+                    disp('cue-locked selected')
+                case 4
+                    disp('target-locked selected')
+            end
+            choice_made = 1;
         end
-        choice_made = 1;
     end
 end
-end
+
 if nargin <1
-choice_made = 0;
-sub_folders=dir([proc_folder filesep 'S*']);
-fprintf('Select subject to analyse: \n')
-switch av_type
-    case 1
-        cnt=1;
-        for s=1:size(sub_folders,1)
-            if exist([proc_folder sub_folders(s).name filesep sub_folders(s).name '_all_clean.mat'])>0
-                fprintf(['[' int2str(cnt) '] ' sub_folders(s).name '\n'])
-                sel(cnt)=s;
-                cnt=cnt+1;
+    choice_made = 0;
+    sub_folders=dir([proc_folder filesep 'S*']);
+    fprintf('Select subject to analyse: \n')
+    switch av_type
+        case 1
+            cnt=1;
+            for s=1:size(sub_folders,1)
+                if exist([proc_folder sub_folders(s).name filesep sub_folders(s).name '_all_clean_dt.mat'])>0
+                    fprintf(['[' int2str(cnt) '] ' sub_folders(s).name '\n'])
+                    sel(cnt)=s;
+                    cnt=cnt+1;
+                end
             end
-        end
-    case 2
-        cnt=1;
-        for s=1:size(sub_folders,1)
-            if exist([proc_folder sub_folders(s).name filesep sub_folders(s).name '_tl.mat'])>0
-                fprintf(['[' int2str(cnt) '] ' sub_folders(s).name '\n'])
-                sel(cnt)=s;
-                cnt=cnt+1;
+        case 2
+            cnt=1;
+            for s=1:size(sub_folders,1)
+                if exist([proc_folder sub_folders(s).name filesep sub_folders(s).name '_tl.mat'])>0
+                    fprintf(['[' int2str(cnt) '] ' sub_folders(s).name '\n'])
+                    sel(cnt)=s;
+                    cnt=cnt+1;
+                end
             end
-        end
-        
-    case 3
-        cnt=1;
-        for s=1:size(sub_folders,1)
-            if exist([proc_folder sub_folders(s).name filesep sub_folders(s).name '_all_clean.mat'])>0
-                fprintf(['[' int2str(cnt) '] ' sub_folders(s).name '\n'])
-                sel(cnt)=s;
-                cnt=cnt+1;
+            
+        case 3
+            cnt=1;
+            for s=1:size(sub_folders,1)
+                if exist([proc_folder sub_folders(s).name filesep sub_folders(s).name '_all_clean.mat'])>0
+                    fprintf(['[' int2str(cnt) '] ' sub_folders(s).name '\n'])
+                    sel(cnt)=s;
+                    cnt=cnt+1;
+                end
             end
-        end
-        
-    case 4
-        cnt=1;
-        for s=1:size(sub_folders,1)
-            if exist([proc_folder sub_folders(s).name filesep sub_folders(s).name '_all_clean_dt.mat'])>0
-                fprintf(['[' int2str(cnt) '] ' sub_folders(s).name '\n'])
-                sel(cnt)=s;
-                cnt=cnt+1;
+            
+        case 4
+            cnt=1;
+            for s=1:size(sub_folders,1)
+                if exist([proc_folder sub_folders(s).name filesep sub_folders(s).name '_all_clean_dt.mat'])>0
+                    fprintf(['[' int2str(cnt) '] ' sub_folders(s).name '\n'])
+                    sel(cnt)=s;
+                    cnt=cnt+1;
+                end
             end
-        end
-        
-end
-
-while ~choice_made
-    choice=input('Enter number: ');
-    if choice>(cnt-1) || choice<1
-        disp('Invalid choice, please try again');
-    else
-        sub=sub_folders(sel(choice)).name;
-        disp(['Subject ' sub ' selected'])
-        choice_made=1;
     end
-end
+    
+    while ~choice_made
+        choice=input('Enter number: ');
+        if choice>(cnt-1) || choice<1
+            disp('Invalid choice, please try again');
+        else
+            sub=sub_folders(sel(choice)).name;
+            disp(['Subject ' sub ' selected'])
+            choice_made=1;
+        end
+    end    
 end
 switch av_type
     case 1
-        fprintf(['Loading ' proc_folder sub filesep sub '_all_clean.mat...'])
-        load([proc_folder sub filesep sub '_all_clean.mat']);disp('Done')
+        disp(['Loading ' proc_folder sub filesep sub '_all_clean_dt.mat...'])
+        load([proc_folder sub filesep sub '_all_clean_dt.mat']);disp('Done')
     case 2
-        fprintf(['Loading ' proc_folder sub filesep sub '_tl.mat...'])
+        disp(['Loading ' proc_folder sub filesep sub '_tl.mat...'])
         load([proc_folder sub filesep sub '_tl.mat']);disp('Done')
     case 3
-        fprintf(['Loading ' proc_folder sub filesep sub '_all_clean.mat...'])
+        disp(['Loading ' proc_folder sub filesep sub '_all_clean.mat...'])
         load([proc_folder sub filesep sub '_all_clean.mat']);disp('Done')
     case 4
-        fprintf(['Loading ' proc_folder sub filesep sub '_all_clean_dt.mat...'])
+        disp(['Loading ' proc_folder sub filesep sub '_all_clean_dt.mat...'])
         load([proc_folder sub filesep sub '_all_clean_dt.mat']);disp('Done')
 end
 
@@ -118,50 +118,54 @@ if av_type < 3
     cfg              = [];
     cfg.foi          = 63;
     cfg.pad          = 4;%'nextpow2';
-    cfg.toi          = -2.3:0.01:1;
     cfg.output       = 'pow';
+    cfg.toi          = -2.3:0.01:1;
     cfg.method       = 'mtmconvol';
     cfg.taper        = 'hanning';
-    cfg.keeptrials   = 'yes';
+    cfg.keeptrials   = 'no';
     cfg.t_ftimwin    = repmat(0.5,1,length(cfg.foi));%10./cfg.foi;%
-    
     
     for c=1:2 % 2 RFT configurations
         for l=1:4 % 4 load conditions
             
             if av_type == 1 % Induced
                 disp('Computing high frequency TFR for RFT-induced')
-                
-                cfg.channel      = strmatch('MEG',data{1}.left{1}.meg.label);
+                cfg.channel      = strmatch('MEG',data{1}.left{1}.meg_dt.label);
                 
                 %left
                 if correct_only
                     cfg.trials = find(data{c}.left{l}.behavior(:,10)>0);
+                    beh.left{c,l}=data{c}.left{l}.behavior(cfg.trials,:);
+                else
+                    beh.left{c,l}=data{c}.left{l}.behavior;
                 end
                 
-                cfg.foi=63;
+                cfg.foi = 63;
                 disp(['Calculating 63Hz RFT trials for configuration ' int2str(c) ', attention left, load condition ' int2str(l) ' (induced)'])
-                TFR.left.RFT.ind.f1{c,l} = ft_freqanalysis(cfg,data{c}.left{l}.meg);
+                TFR.left.RFT.ind.f1{c,l} = ft_freqanalysis(cfg,data{c}.left{l}.meg_dt);
                 TFR.left.RFT.ind.f1{c,l}.grad = data{c}.grad;
                 
                 disp(['Calculating 70Hz RFT trials for configuration ' int2str(c) ', attention left, load condition ' int2str(l)  ' (induced)'])
                 cfg.foi = 70;
-                TFR.left.RFT.ind.f2{c,l} = ft_freqanalysis(cfg,data{c}.left{l}.meg);
+                TFR.left.RFT.ind.f2{c,l} = ft_freqanalysis(cfg,data{c}.left{l}.meg_dt);
                 TFR.left.RFT.ind.f2{c,l}.grad = data{c}.grad;
                 
                 %right
                 if correct_only
                     cfg.trials = find(data{c}.right{l}.behavior(:,10)>0);
+                    beh.right{c,l}=data{c}.right{l}.behavior(cfg.trials,:);
+                else
+                    beh.righft{c,l}=data{c}.right{l}.behavior;
                 end
                 
-                cfg.foi=63;
+                cfg.foi = 63;
                 disp(['Calculating 63Hz RFT trials for configuration ' int2str(c) ', attention right, load condition ' int2str(l) ' (induced)'])
-                TFR.right.RFT.ind.f1{c,l} = ft_freqanalysis(cfg,data{c}.right{l}.meg);
+                TFR.right.RFT.ind.f1{c,l} = ft_freqanalysis(cfg,data{c}.right{l}.meg_dt);
                 TFR.right.RFT.ind.f1{c,l}.grad = data{c}.grad;
                 
                 cfg.foi = 70;
                 disp(['Calculating 70Hz RFT trials for configuration ' int2str(c) ', attention right, load condition ' int2str(l) ' (induced)'])
-                TFR.right.RFT.ind.f2{c,l} = ft_freqanalysis(cfg,data{c}.right{l}.meg);
+                TFR.right.RFT.ind.f2{c,l} = ft_freqanalysis(cfg,data{c}.right{l}.meg_dt);
                 TFR.right.RFT.ind.f2{c,l}.grad = data{c}.grad;
                 
             elseif av_type == 2 % Evoked
@@ -239,7 +243,7 @@ if av_type < 3
     end
     
     
-    % Append allloads -- configs should remain separated
+    % Append all loads -- configs should remain separated
     for c=1:2
         if av_type == 1
             TFR.attLeft.ind.f1{c}  = ft_appendfreq([],TFR.left.RFT.ind.f1{c,:});
@@ -383,7 +387,7 @@ fprintf(['Saving data for ' sub '...\n'])
 switch av_type
     case 1
         if correct_only
-            save([proc_folder sub filesep sub '_TFR_RFT_correct_only.mat'],'TFR','beh','-v7.3');
+            save([proc_folder sub filesep sub '_TFR_RFT_dt_correct_only.mat'],'TFR','beh','-v7.3');
         else
             save([proc_folder sub filesep sub '_TFR_RFT.mat'],'TFR','beh','-v7.3');
         end

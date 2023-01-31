@@ -79,18 +79,6 @@ LRContrast = nanmean(TFR_attLeft_LF_timSlctd.powspctrm,3)-nanmean(TFR_attRight_L
 [BLR,idxLR] = sortrows(LRContrast,'descend'); % a vector of data ordered from highest to lowest difference in R-L
 
 ROIRL = TFR_attRight_LF_timSlctd.label(idxRL(1:num));
-
-%     {'MEG2032+2033'} --> mid to R, par to occ
-%     {'MEG0442+0443'} --> L, par
-%     {'MEG2012+2013'} --> mid to L, par to occ
-%     {'MEG0232+0233'} --> L, par
-%     {'MEG2322+2323'} --> R, par to occ
-%     {'MEG1932+1933'} --> L, occ
-%     {'MEG1922+1923'} --> L, occ
-%     {'MEG2042+2043'} --> mid to L, occ
-%     {'MEG1812+1813'} --> L, par
-%     {'MEG0212+0213'} --> L, tem
-
 ROILR = TFR_attLeft_LF_timSlctd.label(idxLR(1:num));
 
 %% plot MI - average over ROI and timwin 

@@ -20,7 +20,6 @@ tl_attLeft = ft_timelockanalysis([],attLeft);
 tl_attRight = ft_timelockanalysis([],attRight);
 
 %Define frequency analysis cgf-lower freq
-
 cfg=[];
 cfg.output='pow';
 cfg.channel='MEGGRAD';
