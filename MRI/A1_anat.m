@@ -8,8 +8,8 @@ fsldirmpath = sprintf('%s/etc/matlab',fsldir);
 path(path, fsldirmpath);
 clear fsldir fsldirmpath;
 
-% addpath '/Users/Tara/Documents/Projects/CHBHVisit/PerceptualLoad/Data/MRI_Data/';
-% filePath='/Users/Tara/Documents/Projects/CHBHVisit/PerceptualLoad/Data/MRI_Data/';
+addpath '/Users/Tara/Documents/Projects/CHBHVisit/PerceptualLoad/Data/MRI_Data/';
+filePath='/Users/Tara/Documents/Projects/CHBHVisit/PerceptualLoad/Data/MRI_Data/';
 
 % addpath '/Volumes/jenseno-avtemporal-attention/Load/MRI_data/';
 % filePath='/Volumes/jenseno-avtemporal-attention/Load/MRI_data/';
@@ -17,9 +17,9 @@ clear fsldir fsldirmpath;
 % filePath='/Volumes/rdsprojects/j/jenseno-avtemporal-attention/Load/MRI_data/';
 % addpath '/Volumes/rdsprojects/j/jenseno-avtemporal-attention/Load/MRI_data/';
 
-%Donders MRI to check
-addpath '/Users/Tara/Documents/Projects/CHBHVisit/PerceptualLoad/Data/Donders_Data/';
-filePath='/Users/Tara/Documents/Projects/CHBHVisit/PerceptualLoad/Data/Donders_Data/';
+% %Donders MRI to check
+% addpath '/Users/Tara/Documents/Projects/CHBHVisit/PerceptualLoad/Data/Donders_Data/';
+% filePath='/Users/Tara/Documents/Projects/CHBHVisit/PerceptualLoad/Data/Donders_Data/';
 
 %% structural analysis
 
